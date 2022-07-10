@@ -11,12 +11,12 @@ of the models capabilities:
 ### Manually Sorted Grid
 
 ![A human sorted grid of 20 images from worst to best, starting with the worst image in the
-top left and the best in the bottom right](https://github.com/crowsonkb/simulacra-aesthetic-models/raw/main/sacManualSort.png)
+top left and the best in the bottom right](https://github.com/crowsonkb/simulacra-aesthetic-models/raw/master/sacManualSort.png)
 
 ### Model Sorted Grid
 
 ![A machine sorted grid of 20 images from worst to best, starting with the worst image in the
-top left and the best in the bottom right](https://github.com/crowsonkb/simulacra-aesthetic-models/raw/main/sacModelSort.png)
+top left and the best in the bottom right](https://github.com/crowsonkb/simulacra-aesthetic-models/raw/master/sacModelSort.png)
 
 ## Installation
 
