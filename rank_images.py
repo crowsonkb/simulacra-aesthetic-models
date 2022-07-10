@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -59,10 +57,11 @@ for path in tqdm(filepaths):
         dim=-1)
     score = model(clip_image_embed)
     if len(scores) < args.top_n:
-        scores.append((score,path))
+        scores.append((score.item(),path))
+        scores.sort()
     else:
         if scores[0][0] < score:
-            scores.append((score,path))
+            scores.append((score.item(),path))
             scores.sort(key=lambda x: x[0])
             scores = scores[1:]
             
