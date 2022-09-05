@@ -10,6 +10,7 @@ import sqlite3
 from PIL import Image
 
 import torch
+from torch import multiprocessing as mp
 from torch.utils import data
 import torchvision.transforms as transforms
 from tqdm import tqdm
@@ -45,29 +46,43 @@ class SimulacraDataset(data.Dataset):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--batch-size', '-bs', type=int, default=100, 
+    p.add_argument('--batch-size', '-bs', type=int, default=10, 
                    help='the CLIP model')
     p.add_argument('--clip-model', type=str, default='ViT-B/16', 
                    help='the CLIP model')
-    p.add_argument('--images-dir', type=str, required=True,
-                   help='the dataset images directory')
     p.add_argument('--db', type=str, required=True,
                    help='the database location')
+    p.add_argument('--device', type=str,
+                   help='the device to use')
+    p.add_argument('--images-dir', type=str, required=True,
+                   help='the dataset images directory')
+    p.add_argument('--num-workers', type=int, default=8,
+                   help='the number of data loader workers')
     p.add_argument('--output', type=str, required=True,
                    help='the output file')
+    p.add_argument('--start-method', type=str, default='spawn',
+                   choices=['fork', 'forkserver', 'spawn'],
+                   help='the multiprocessing start method')
     args = p.parse_args()
 
-    clip_model, clip_tf = clip.load(args.clip_model, jit=False)
+    mp.set_start_method(args.start_method)
+    if args.device:
+        device = torch.device(device)
+    else:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print('Using device:', device)
+
+    clip_model, clip_tf = clip.load(args.clip_model, device=device, jit=False)
     clip_model = clip_model.eval().requires_grad_(False)
 
     dataset = SimulacraDataset(args.images_dir, args.db, transform=clip_tf)
-    loader = data.DataLoader(dataset, args.batch_size, num_workers=24)
+    loader = data.DataLoader(dataset, args.batch_size, num_workers=args.num_workers)
 
     embeds, ratings = [], []
 
     for batch in tqdm(loader):
         images_batch, ratings_batch = batch
-        embeds.append(clip_model.encode_image(images_batch.cuda()).cpu())
+        embeds.append(clip_model.encode_image(images_batch.to(device)).cpu())
         ratings.append(ratings_batch.clone())
 
     obj = {'clip_model': args.clip_model,
